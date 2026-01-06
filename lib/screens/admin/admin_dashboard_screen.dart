@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/screens/admin/party_list_screen.dart';
-import 'package:myapp/screens/admin/user_list_screen.dart';
+import 'package:rbcledger/screens/admin/party_list_screen.dart';
+import 'package:rbcledger/screens/admin/user_list_screen.dart';
 import '../../services/auth_service.dart';
 import '../login_screen.dart';
 
@@ -48,20 +48,6 @@ class AdminDashboardScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => PartyListScreen()));
               },
-            ),
-            _dashboardCard(
-              context,
-              title: "Ledgers",
-              icon: Icons.receipt_long,
-              onTap: () {
-                // Navigator.push(context, MaterialPageRoute(builder: (_) => LedgerListScreen()));
-              },
-            ),
-            _dashboardCard(
-              context,
-              title: "Reports",
-              icon: Icons.bar_chart,
-              onTap: () {},
             ),
           ],
         ),

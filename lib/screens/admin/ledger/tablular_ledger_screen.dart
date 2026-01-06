@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:rbcledger/screens/admin/ledger/add_ledger_screen.dart';
 import 'package:rbcledger/screens/admin/ledger/edit_ledger_screen.dart';
-import 'package:rbcledger/screens/admin/ledger/pdf_preview_ledger_screen.dart';
-import 'package:rbcledger/screens/admin/ledger/tablular_ledger_screen.dart';
-import 'package:rbcledger/services/ledger_pdf_service.dart';
 import 'package:rbcledger/services/ledger_service.dart';
 
-class ViewLedgerScreen extends StatefulWidget {
+class TabularLedgerScreen extends StatefulWidget {
   final int partyId;
-  const ViewLedgerScreen({super.key, required this.partyId});
+  const TabularLedgerScreen({super.key, required this.partyId});
 
   @override
-  State<ViewLedgerScreen> createState() => _ViewLedgerScreenState();
+  State<TabularLedgerScreen> createState() => _TabularLedgerScreenState();
 }
 
-class _ViewLedgerScreenState extends State<ViewLedgerScreen> {
+class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
   bool loading = true;
 
   List<dynamic> ledgerList = [];
@@ -115,24 +112,6 @@ class _ViewLedgerScreenState extends State<ViewLedgerScreen> {
       appBar: AppBar(title: Text(partyName),
       actions: [
         IconButton(
-          icon: const Icon(Icons.table_view), // Replace with your desired icon
-          tooltip: "View Tabluar form",
-          onPressed: () async {
-            final added = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => TabularLedgerScreen(
-                  partyId: widget.partyId,
-                ),
-              ),
-            );
-
-            if (added == true) {
-              loadLedger(); // refresh ledger
-            }
-          },
-        ),
-        IconButton(
           icon: const Icon(Icons.add), // Replace with your desired icon
           tooltip: "Add Ledger Entry",
           onPressed: () async {
@@ -151,28 +130,6 @@ class _ViewLedgerScreenState extends State<ViewLedgerScreen> {
             }
           },
         ),
-
-        ElevatedButton.icon(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => LedgerPdfPreviewScreen(
-                  partyName: partyName,
-                  ledgerList: ledgerList,
-                  openingBalanceDebit: openingBalanceDebit,
-                  openingBalanceCredit: openingBalanceCredit,
-                  totalDebit: totalDebit,
-                  totalCredit: totalCredit,
-                  balance: balance,
-                ),
-              ),
-            );
-          },
-          icon: const Icon(Icons.picture_as_pdf),
-          label: const Text('Preview'),
-        ),
-
       ],
       ),
       body: loading
@@ -183,109 +140,78 @@ class _ViewLedgerScreenState extends State<ViewLedgerScreen> {
           _openingBalanceHeader(),
 
           // 🔹 LEDGER LIST
+          // 🔹 LEDGER TABLE
           Expanded(
             child: ledgerList.isEmpty
                 ? const Center(child: Text("No ledger entries"))
-                : ListView.builder(
-              itemCount: ledgerList.length,
-              itemBuilder: (context, index) {
-                final l = ledgerList[index];
-                return Card(
-                  margin: const EdgeInsets.all(8),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Left side: voucher + info
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                : SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: DataTable(
+                  columnSpacing: 20,
+                  headingRowColor: MaterialStateProperty.all(Colors.grey.shade300),
+                  columns: const [
+                    DataColumn(label: Text("Date")),
+                    DataColumn(label: Text("Voucher")),
+                    DataColumn(label: Text("Type")),
+                    DataColumn(label: Text("Debit")),
+                    DataColumn(label: Text("Credit")),
+                    DataColumn(label: Text("Actions")),
+                  ],
+                  rows: ledgerList.map<DataRow>((l) {
+                    return DataRow(
+                      cells: [
+                        DataCell(Text(l['entry_date'] ?? '-')),
+                        DataCell(Text(l['voucher_no'] ?? '-')),
+                        DataCell(Text(l['transaction_type'] ?? '-')),
+                        DataCell(
+                          Text(
+                            (l['debit'] ?? 0).toString(),
+                            style: const TextStyle(color: Colors.green),
+                          ),
+                        ),
+                        DataCell(
+                          Text(
+                            (l['credit'] ?? 0).toString(),
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ),
+                        DataCell(
+                          Row(
                             children: [
-                              // Voucher number
-                              Text(
-                                "Voucher: ${l['voucher_no']}",
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.orange, size: 16),
+                                onPressed: () async {
+                                  final updated = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => EditLedgerEntryScreen(
+                                        ledgerId: l['ledger_id'],
+                                        partyId: widget.partyId,
+                                        partyName: partyName,
+                                        ledgerData: l,
+                                      ),
+                                    ),
+                                  );
+                                  if (updated == true) loadLedger();
+                                },
                               ),
-                              const SizedBox(height: 4),
-                              // Details
-                              Text("Date: ${l['entry_date']}"),
-                              Text("Type: ${l['transaction_type']}"),
-                              Text(
-                                "Narration: ${l['narration'] ?? '-'}",
-                                style: const TextStyle(fontSize: 12, color: Colors.green),
-                              ),
-                              Text(
-                                "Remark: ${l['remark'] ?? '-'}",
-                                style: const TextStyle(fontSize: 12, color: Colors.purple),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.redAccent, size: 16,),
+                                onPressed: () =>
+                                    _deleteLedger(l['ledger_id']),
                               ),
                             ],
                           ),
                         ),
-
-                        // Right side: Edit / DrCr / Delete
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-
-                          children: [
-                            Row(
-                                mainAxisSize: MainAxisSize.min,
-                              children:[ IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              icon: const Icon(Icons.edit, color: Colors.orange, size: 18),
-                              onPressed: () async {
-                                final updated = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => EditLedgerEntryScreen(
-                                      ledgerId: l['ledger_id'],
-                                      partyId: widget.partyId,
-                                      partyName: partyName,
-                                      ledgerData: l,
-                                    ),
-                                  ),
-                                );
-                                if (updated == true) loadLedger();
-                              },
-                            ),
-                                const SizedBox(width: 20),
-                            // DELETE
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              icon: const Icon(Icons.delete, color: Colors.redAccent, size: 18),
-                              onPressed: () => _deleteLedger(l['ledger_id']),
-                            ),
-                            ]
-                        ),
-                            // DR / CR middle
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  "Dr: ${l['debit']}",
-                                  style: const TextStyle(fontSize: 12, color: Colors.green),
-                                ),
-                                Text(
-                                  "Cr: ${l['credit']}",
-                                  style: const TextStyle(fontSize: 12, color: Colors.red),
-                                ),
-                              ],
-                            ),
-
-
-                          ],
-                        ),
                       ],
-                    ),
-                  ),
-                );
-              },
+                    );
+                  }).toList(),
+                ),
+              ),
             ),
           ),
-
           // 🔹 TOTALS FOOTER
           _totalsFooter(),
         ],
@@ -298,7 +224,7 @@ class _ViewLedgerScreenState extends State<ViewLedgerScreen> {
   Widget _openingBalanceHeader() {
     return Container(
       margin: const EdgeInsets.all(8),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -306,7 +232,7 @@ class _ViewLedgerScreenState extends State<ViewLedgerScreen> {
           BoxShadow(
             color: Colors.black12,
             blurRadius: 4,
-            offset: Offset(0, 2),
+            offset: Offset(0, 1),
           ),
         ],
       ),

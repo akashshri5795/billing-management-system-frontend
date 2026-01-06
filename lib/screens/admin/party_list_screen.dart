@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/screens/admin/add_party_screen.dart';
-import 'package:myapp/screens/admin/ledger/add_ledger_screen.dart';
-import 'package:myapp/screens/admin/ledger/view_ledger_screen.dart';
-import 'package:myapp/screens/admin/party_details_screen.dart';
+import 'package:rbcledger/screens/admin/add_party_screen.dart';
+import 'package:rbcledger/screens/admin/ledger/add_ledger_screen.dart';
+import 'package:rbcledger/screens/admin/ledger/view_ledger_screen.dart';
+import 'package:rbcledger/screens/admin/party_details_screen.dart';
 import '../../services/party_service.dart';
 
 class PartyListScreen extends StatefulWidget {
@@ -70,26 +70,7 @@ class _PartyListScreenState extends State<PartyListScreen> {
               children: [
                 // 📘 Ledger Button
                 IconButton(
-                  icon: const Icon(Icons.book),
-                  tooltip: "Add Ledger Entry",
-                  onPressed: () async {
-                    final added = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => AddLedgerEntryScreen(
-                          partyId: party['party_id'],
-                        ),
-                      ),
-                    );
-
-                    if (added == true) {
-                      loadParties();
-                    }
-                  },
-                ),
-
-                IconButton(
-                  icon: const Icon(Icons.report),
+                  icon: const Icon(Icons.leaderboard),
                   tooltip: "View Ledger Entry",
                   onPressed: () async {
                     final added = await Navigator.push(

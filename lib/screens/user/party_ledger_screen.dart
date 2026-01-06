@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/services/user/user_party_service.dart';
+import 'package:rbcledger/services/user/user_party_service.dart';
 
 class PartyLedgerScreen extends StatelessWidget {
   final int partyId;

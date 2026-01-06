@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/screens/admin/add_user_screen.dart';
-import 'package:myapp/screens/admin/user_details_screen.dart';
-import 'package:myapp/services/user_service.dart';
+import 'package:rbcledger/screens/admin/add_user_screen.dart';
+import 'package:rbcledger/screens/admin/user_details_screen.dart';
+import 'package:rbcledger/services/user_service.dart';
 import '../../services/auth_service.dart';
 import '../login_screen.dart';
 

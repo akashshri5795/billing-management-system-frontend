@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:myapp/config/api_config.dart';
+import 'package:rbcledger/config/api_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {

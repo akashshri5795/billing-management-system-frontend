@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/screens/user/party_list_screen.dart';
+import 'package:rbcledger/screens/user/party_list_screen.dart';
 import '../../services/auth_service.dart';
 import '../login_screen.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/services/user_service.dart';
+import 'package:rbcledger/services/user_service.dart';
 
 class AddUserScreen extends StatefulWidget {
   const AddUserScreen({super.key});

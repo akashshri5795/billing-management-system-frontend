@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/model/UserModel.dart';
-import 'package:myapp/services/user_service.dart';
-import 'package:myapp/services/party_service.dart';
+import 'package:rbcledger/model/UserModel.dart';
+import 'package:rbcledger/services/user_service.dart';
+import 'package:rbcledger/services/party_service.dart';
 
 class EditPartyScreen extends StatefulWidget {
   final int partyId;

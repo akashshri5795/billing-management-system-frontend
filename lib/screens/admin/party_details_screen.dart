@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/screens/admin/party/edit_party_screen.dart';
-import 'package:myapp/services/party_service.dart';
+import 'package:rbcledger/screens/admin/party/edit_party_screen.dart';
+import 'package:rbcledger/services/party_service.dart';
 
 class PartyDetailsScreen extends StatefulWidget {
   final int partyId;
