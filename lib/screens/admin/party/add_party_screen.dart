@@ -66,6 +66,7 @@ class _AddPartyScreenState extends State<AddPartyScreen> {
                     return CheckboxListTile(
                       value: tempSelected.contains(user.id),
                       title: Text(user.name),
+                      subtitle: Text(user.role),
                       onChanged: (checked) {
                         setStateDialog(() {
                           if (checked == true) {
@@ -150,7 +151,7 @@ class _AddPartyScreenState extends State<AddPartyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Add Party")),
+      appBar: AppBar(title: const Text("Add Party", style: TextStyle(color: Colors.white),),backgroundColor: Colors.teal,),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -195,9 +196,10 @@ class _AddPartyScreenState extends State<AddPartyScreen> {
               TextFormField(
                 controller: emailController,
                 decoration: const InputDecoration(
-                  labelText: "Email (optional)",
+                  labelText: "Email",
                   border: OutlineInputBorder(),
                 ),
+                validator: (v) => v!.isEmpty ? "Email required" : null,
               ),
               const SizedBox(height: 12),
 
@@ -227,6 +229,7 @@ class _AddPartyScreenState extends State<AddPartyScreen> {
                   labelText: "Opening Balance",
                   border: OutlineInputBorder(),
                 ),
+                validator: (v) => v!.isEmpty ? "Amount required" : null,
               ),
               const SizedBox(height: 16),
 
@@ -234,14 +237,14 @@ class _AddPartyScreenState extends State<AddPartyScreen> {
               ListTile(
                 title: const Text(
                   "Assign Users",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
                 ),
                 subtitle: Text(
                   selectedUserIds.isEmpty
                       ? "No users selected"
                       : "${selectedUserIds.length} user(s) selected",
                 ),
-                trailing: const Icon(Icons.arrow_forward_ios),
+                trailing: const Icon(Icons.arrow_forward_ios, color: Colors.teal,),
                 onTap: _openUserSelectionDialog,
               ),
 

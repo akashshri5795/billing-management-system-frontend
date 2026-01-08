@@ -94,6 +94,7 @@ class _EditPartyScreenState extends State<EditPartyScreen> {
                     return CheckboxListTile(
                       value: tempSelected.contains(user.id),
                       title: Text(user.name),
+                      subtitle: Text(user.role),
                       onChanged: (checked) {
                         setDialogState(() {
                           checked == true
@@ -173,7 +174,7 @@ class _EditPartyScreenState extends State<EditPartyScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Edit Party")),
+      appBar: AppBar(title: const Text("Edit Party", style: TextStyle(color: Colors.white),),backgroundColor: Colors.teal,),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -214,10 +215,10 @@ class _EditPartyScreenState extends State<EditPartyScreen> {
 
               ListTile(
                 title: const Text("Assign Users",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal)),
                 subtitle: Text(
                     "${selectedUserIds.length} user(s) selected"),
-                trailing: const Icon(Icons.arrow_forward_ios),
+                trailing: const Icon(Icons.arrow_forward_ios, color: Colors.teal,),
                 onTap: _openUserSelectionDialog,
               ),
 

@@ -13,9 +13,13 @@ class UserService {
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
+    final userRole = prefs.getString("role");
 
-    if (token == null) {
-      throw Exception("Unauthorized");
+    if (token == null || userRole == null) {
+      throw Exception("User not logged in");
+    }
+    if (userRole != "admin") {
+      throw Exception("Unauthorized: Only admin can add User");
     }
 
     final response = await http.post(
@@ -39,12 +43,16 @@ class UserService {
     }
   }
 
-  static Future<List<dynamic>> getUsers() async {
+  static Future<List<dynamic>> getAllUsers() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
+    final role = prefs.getString("role");
 
-    if (token == null) {
-      throw Exception("Unauthorized");
+    if (token == null || role == null) {
+      throw Exception("User not logged in");
+    }
+    if (role != "admin") {
+      throw Exception("Unauthorized: Only admin can view User List");
     }
 
     final response = await http.get(
@@ -63,12 +71,44 @@ class UserService {
     }
   }
 
+  static Future<List<dynamic>> getUsers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+    final role = prefs.getString("role");
+
+    if (token == null || role == null) {
+      throw Exception("User not logged in");
+    }
+    if (role != "admin") {
+      throw Exception("Unauthorized: Only admin can view User List");
+    }
+
+    final response = await http.get(
+      Uri.parse("${ApiConfig.baseUrl}/user-list"),
+      headers: {
+        "Accept": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return (data['users'] as List<dynamic>?) ?? [];
+    } else {
+      throw Exception("Failed to load users");
+    }
+  }
+
   static Future<Map<String, dynamic>> getUserDetail(int id) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
+    final role = prefs.getString("role");
 
-    if (token == null) {
-      throw Exception("Unauthorized");
+    if (token == null || role == null) {
+      throw Exception("User not logged in");
+    }
+    if (role != "admin") {
+      throw Exception("Unauthorized: Only admin can view User Details");
     }
 
     final response = await http.get(
@@ -102,6 +142,14 @@ class UserService {
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
+    final userRole = prefs.getString("role");
+
+    if (token == null || userRole == null) {
+      throw Exception("User not logged in");
+    }
+    if (userRole != "admin") {
+      throw Exception("Unauthorized: Only admin can update User");
+    }
 
     final response = await http.put(
       Uri.parse("${ApiConfig.baseUrl}/users/$id"),

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:rbcledger/screens/admin/add_party_screen.dart';
-import 'package:rbcledger/screens/admin/ledger/add_ledger_screen.dart';
+import 'package:rbcledger/screens/admin/party/add_party_screen.dart';
 import 'package:rbcledger/screens/admin/ledger/view_ledger_screen.dart';
-import 'package:rbcledger/screens/admin/party_details_screen.dart';
-import '../../services/party_service.dart';
+import 'package:rbcledger/screens/admin/party/party_details_screen.dart';
+import '../../../services/party_service.dart';
 
 class PartyListScreen extends StatefulWidget {
   const PartyListScreen({super.key});
@@ -39,20 +38,25 @@ class _PartyListScreenState extends State<PartyListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Parties")),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final added = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AddPartyScreen()),
-          );
+      appBar: AppBar(title: const Text("Parties", style: TextStyle(color: Colors.white),),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.add_box, color: Colors.white,),
+          onPressed: () async {
+            final added = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AddPartyScreen()),
+            );
 
-          if (added == true) {
-            loadParties();
-          }
-        },
-        child: const Icon(Icons.add),
+            if (added == true) {
+              loadParties();
+            }
+          },
+        ),
+      ],
+        backgroundColor: Colors.teal,
       ),
+
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : partyList.isEmpty
@@ -63,14 +67,14 @@ class _PartyListScreenState extends State<PartyListScreen> {
           final party = partyList[index];
 
           return ListTile(
-            title: Text(party['name']),
-            subtitle: Text(party['address'] ?? ""),
+            title: Text(party['name'], style: TextStyle(fontWeight: FontWeight.bold),),
+            subtitle: Text(party['address'] ?? "", style: TextStyle(color: Colors.teal,fontStyle: FontStyle.italic),),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // 📘 Ledger Button
                 IconButton(
-                  icon: const Icon(Icons.leaderboard),
+                  icon: const Icon(Icons.leaderboard, color: Colors.blueGrey,),
                   tooltip: "View Ledger Entry",
                   onPressed: () async {
                     final added = await Navigator.push(
@@ -90,7 +94,7 @@ class _PartyListScreenState extends State<PartyListScreen> {
 
                 // ➡ Party Details Button
                 IconButton(
-                  icon: const Icon(Icons.arrow_forward_ios),
+                  icon: const Icon(Icons.arrow_forward, color: Colors.teal,),
                   tooltip: "View Party Details",
                   onPressed: () async {
                     final updated = await Navigator.push(

@@ -19,14 +19,11 @@ class AuthService {
         }),
       );
 
-      print("Status: ${response.statusCode}");
-      print("Body: ${response.body}");
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString("token", data['token']);
+        await prefs.setInt("userId", data['user']['id']);
         await prefs.setString("role", data['user']['role']);
 
         return data['user']['role'];

@@ -33,10 +33,10 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("User Details"),
+          title: const Text("User Details", style: TextStyle(color: Colors.white),),
           actions: [
             IconButton(
-              icon: const Icon(Icons.edit),
+              icon: const Icon(Icons.edit, color: Colors.white,),
               onPressed: () async {
                 final updated = await Navigator.push<bool>(
                   context,
@@ -60,6 +60,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
               },
             ),
           ],
+          backgroundColor: Colors.teal,
         ),
         body: FutureBuilder<Map<String, dynamic>>(
           future: _userFuture,

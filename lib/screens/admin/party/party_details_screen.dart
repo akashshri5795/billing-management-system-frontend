@@ -33,10 +33,10 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Party Details"),
+          title: const Text("Party Details", style: TextStyle(color: Colors.white),),
           actions: [
             IconButton(
-              icon: const Icon(Icons.edit),
+              icon: const Icon(Icons.edit,color: Colors.white,),
               onPressed: () async {
                 final result = await Navigator.push(
                   context,
@@ -62,6 +62,7 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
               },
             ),
           ],
+          backgroundColor: Colors.teal,
         ),
         body: FutureBuilder<Map<String, dynamic>>(
           future: partyFuture,

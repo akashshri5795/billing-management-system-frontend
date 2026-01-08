@@ -3,7 +3,6 @@ import 'package:rbcledger/screens/admin/ledger/add_ledger_screen.dart';
 import 'package:rbcledger/screens/admin/ledger/edit_ledger_screen.dart';
 import 'package:rbcledger/screens/admin/ledger/pdf_preview_ledger_screen.dart';
 import 'package:rbcledger/screens/admin/ledger/tablular_ledger_screen.dart';
-import 'package:rbcledger/services/ledger_pdf_service.dart';
 import 'package:rbcledger/services/ledger_service.dart';
 
 class ViewLedgerScreen extends StatefulWidget {
@@ -112,10 +111,10 @@ class _ViewLedgerScreenState extends State<ViewLedgerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(partyName),
+      appBar: AppBar(title: Text(partyName, style: TextStyle(color: Colors.white),),
       actions: [
         IconButton(
-          icon: const Icon(Icons.table_view), // Replace with your desired icon
+          icon: const Icon(Icons.table_view, color: Colors.white,), // Replace with your desired icon
           tooltip: "View Tabluar form",
           onPressed: () async {
             final added = await Navigator.push(
@@ -133,7 +132,7 @@ class _ViewLedgerScreenState extends State<ViewLedgerScreen> {
           },
         ),
         IconButton(
-          icon: const Icon(Icons.add), // Replace with your desired icon
+          icon: const Icon(Icons.add_box, color: Colors.white,),
           tooltip: "Add Ledger Entry",
           onPressed: () async {
             final added = await Navigator.push(
@@ -169,11 +168,12 @@ class _ViewLedgerScreenState extends State<ViewLedgerScreen> {
               ),
             );
           },
-          icon: const Icon(Icons.picture_as_pdf),
-          label: const Text('Preview'),
+          icon: const Icon(Icons.picture_as_pdf, color: Colors.teal,),
+          label: const Text('Preview', style: TextStyle(color: Colors.teal),),
         ),
 
       ],
+        backgroundColor: Colors.teal,
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())

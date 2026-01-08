@@ -15,6 +15,14 @@ class PartyService {
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
+    final role = prefs.getString("role");
+
+    if (token == null || role == null) {
+      throw Exception("User not logged in");
+    }
+    if (role != "admin") {
+      throw Exception("Unauthorized: Only admin can create party");
+    }
 
     final response = await http.post(
       Uri.parse("${ApiConfig.baseUrl}/party"),
@@ -51,7 +59,14 @@ class PartyService {
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
+    final role = prefs.getString("role");
 
+    if (token == null || role == null) {
+      throw Exception("User not logged in");
+    }
+    if (role != "admin") {
+      throw Exception("Unauthorized: Only admin can update party");
+    }
     final response = await http.put(
       Uri.parse("${ApiConfig.baseUrl}/party/$partyId"),
       headers: {
@@ -78,6 +93,14 @@ class PartyService {
   static Future<List<dynamic>> getParties() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
+    final role = prefs.getString("role");
+
+    if (token == null || role == null) {
+      throw Exception("User not logged in");
+    }
+    if (role != "admin") {
+      throw Exception("Unauthorized: Only admin can update party");
+    }
 
     final response = await http.get(
       Uri.parse("${ApiConfig.baseUrl}/party"),
@@ -95,12 +118,24 @@ class PartyService {
     }
   }
 
-  static Future<Map<String, dynamic>> getPartyDetail(int id) async {
+  static Future<Map<String, dynamic>> getPartyDetail(int partyId) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
+    final role = prefs.getString("role");
+
+    if (token == null || role == null) {
+      throw Exception("User not logged in");
+    }
+    String url;
+
+    if (role == "admin") {
+      url = "${ApiConfig.baseUrl}/party/$partyId";
+    } else {
+      url = "${ApiConfig.baseUrl}/user/party/$partyId";
+    }
 
     final response = await http.get(
-      Uri.parse("${ApiConfig.baseUrl}/party/$id"),
+      Uri.parse(url),
       headers: {
         "Accept": "application/json",
         "Content-Type": "application/json",
@@ -117,6 +152,37 @@ class PartyService {
       }
     } else {
       throw Exception("Failed to load party detail");
+    }
+  }
+
+
+  static Future<List<dynamic>> getUserPartyList() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+    final userId = prefs.getInt("userId");
+    final role = prefs.getString("role");
+
+    if (userId == null || token == null) {
+      throw Exception("User not logged in");
+    }
+    if (role != "user") {
+      throw Exception("Unauthorized: Only User can view List");
+    }
+
+    final response = await http.get(
+      Uri.parse("${ApiConfig.baseUrl}/user/user-party-list/$userId"),
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return (data['party'] as List<dynamic>?) ?? [];
+    } else {
+      throw Exception("Failed to load parties");
     }
   }
 }

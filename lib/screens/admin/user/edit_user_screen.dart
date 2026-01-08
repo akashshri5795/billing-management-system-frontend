@@ -18,6 +18,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
   final roleController = TextEditingController();
 
   bool loading = true;
+  String selectedRole = 'user';
 
   @override
   void initState() {
@@ -29,7 +30,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
     final user = await UserService.getUserDetail(widget.userId);
     nameController.text = user['name'];
     emailController.text = user['email'];
-    roleController.text = user['role'];
+    selectedRole = user['role'];
     setState(() => loading = false);
   }
 
@@ -43,7 +44,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
         id: widget.userId,
         name: nameController.text.trim(),
         email: emailController.text.trim(),
-        role: roleController.text.trim(),
+        role: selectedRole,
       );
 
       if (!mounted) return;
@@ -65,7 +66,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Edit User")),
+      appBar: AppBar(title: const Text("Edit User", style: TextStyle(color: Colors.white),),backgroundColor: Colors.teal,),
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
@@ -94,19 +95,24 @@ class _EditUserScreenState extends State<EditUserScreen> {
                 v!.isEmpty ? "Email required" : null,
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: roleController,
+              DropdownButtonFormField<String>(
+                value: selectedRole,
                 decoration: const InputDecoration(
                   labelText: "Role",
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) =>
-                v!.isEmpty ? "Role required" : null,
+                items: const [
+                  DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                  DropdownMenuItem(value: 'user', child: Text('User')),
+                ],
+                onChanged: (value) {
+                  setState(() => selectedRole = value!);
+                },
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: updateUser,
-                child: const Text("Update User"),
+                child: const Text("Update User", style: TextStyle(color: Colors.blueGrey, fontWeight: FontWeight.bold),),
               ),
             ],
           ),

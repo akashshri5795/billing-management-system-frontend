@@ -52,7 +52,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Add User")),
+      appBar: AppBar(title: const Text("Add User", style: TextStyle(color: Colors.white),), backgroundColor: Colors.teal,),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -115,7 +115,6 @@ class _AddUserScreenState extends State<AddUserScreen> {
                 },
               ),
               const SizedBox(height: 20),
-
               loading
                   ? const CircularProgressIndicator()
                   : SizedBox(

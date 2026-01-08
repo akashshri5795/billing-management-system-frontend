@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:rbcledger/screens/admin/ledger/add_ledger_screen.dart';
-import 'package:rbcledger/screens/admin/ledger/edit_ledger_screen.dart';
+import 'package:rbcledger/screens/user/pdf_preview_ledger_screen.dart';
+import 'package:rbcledger/screens/user/tablular_ledger_screen.dart';
 import 'package:rbcledger/services/ledger_service.dart';
 
-class TabularLedgerScreen extends StatefulWidget {
+class ViewLedgerScreen extends StatefulWidget {
   final int partyId;
-  const TabularLedgerScreen({super.key, required this.partyId});
+  const ViewLedgerScreen({super.key, required this.partyId});
 
   @override
-  State<TabularLedgerScreen> createState() => _TabularLedgerScreenState();
+  State<ViewLedgerScreen> createState() => _ViewLedgerScreenState();
 }
 
-class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
+class _ViewLedgerScreenState extends State<ViewLedgerScreen> {
   bool loading = true;
 
   List<dynamic> ledgerList = [];
@@ -50,7 +50,6 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
       }
       setState(() {
         ledgerList = data['ledger'] ?? [];
-
         partyName = data['party']?['name'] ?? 'Party';
         openingBalanceDebit = safeDouble(data['opening_balance_dr']);
         openingBalanceCredit = safeDouble(data['opening_balance_cr']);
@@ -66,61 +65,20 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
     }
   }
 
-
-  void _deleteLedger(int ledgerId) async {
-    try {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text("Confirm Delete"),
-          content: const Text("Are you sure you want to delete this entry?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text("Delete"),
-            ),
-          ],
-        ),
-      );
-
-      if (confirmed != true) return;
-
-      // Call LedgerService to delete
-      final success = await LedgerService.deleteLedger(ledgerId);
-
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Ledger entry deleted successfully")),
-        );
-        loadLedger(); // refresh ledger list
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
-    }
-  }
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(partyName, style: TextStyle(color: Colors.white),),
       actions: [
         IconButton(
-          icon: const Icon(Icons.add_box, color: Colors.white,),
-          tooltip: "Add Ledger Entry",
+          icon: const Icon(Icons.table_view, color: Colors.white,), // Replace with your desired icon
+          tooltip: "Tabluar View",
           onPressed: () async {
             final added = await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => AddLedgerEntryScreen(
+                builder: (_) => TabularLedgerScreen(
                   partyId: widget.partyId,
-                  partyName: partyName,
                 ),
               ),
             );
@@ -130,6 +88,28 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
             }
           },
         ),
+
+        ElevatedButton.icon(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => LedgerPdfPreviewScreen(
+                  partyName: partyName,
+                  ledgerList: ledgerList,
+                  openingBalanceDebit: openingBalanceDebit,
+                  openingBalanceCredit: openingBalanceCredit,
+                  totalDebit: totalDebit,
+                  totalCredit: totalCredit,
+                  balance: balance,
+                ),
+              ),
+            );
+          },
+          icon: const Icon(Icons.picture_as_pdf, color: Colors.teal,),
+          label: const Text('Preview', style: TextStyle(color: Colors.teal),),
+        ),
+
       ],
         backgroundColor: Colors.teal,
       ),
@@ -141,78 +121,69 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
           _openingBalanceHeader(),
 
           // 🔹 LEDGER LIST
-          // 🔹 LEDGER TABLE
           Expanded(
             child: ledgerList.isEmpty
                 ? const Center(child: Text("No ledger entries"))
-                : SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: DataTable(
-                  columnSpacing: 20,
-                  headingRowColor: MaterialStateProperty.all(Colors.grey.shade300),
-                  columns: const [
-                    DataColumn(label: Text("Date")),
-                    DataColumn(label: Text("Voucher")),
-                    DataColumn(label: Text("Type")),
-                    DataColumn(label: Text("Debit")),
-                    DataColumn(label: Text("Credit")),
-                    DataColumn(label: Text("Actions")),
-                  ],
-                  rows: ledgerList.map<DataRow>((l) {
-                    return DataRow(
-                      cells: [
-                        DataCell(Text(l['entry_date'] ?? '-')),
-                        DataCell(Text(l['voucher_no'] ?? '-')),
-                        DataCell(Text(l['transaction_type'] ?? '-')),
-                        DataCell(
-                          Text(
-                            (l['debit'] ?? 0).toString(),
-                            style: const TextStyle(color: Colors.green),
-                          ),
-                        ),
-                        DataCell(
-                          Text(
-                            (l['credit'] ?? 0).toString(),
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        ),
-                        DataCell(
-                          Row(
+                : ListView.builder(
+              itemCount: ledgerList.length,
+              itemBuilder: (context, index) {
+                final l = ledgerList[index];
+                return Card(
+                  margin: const EdgeInsets.all(8),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Left side: voucher + info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.orange, size: 16),
-                                onPressed: () async {
-                                  final updated = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => EditLedgerEntryScreen(
-                                        ledgerId: l['ledger_id'],
-                                        partyId: widget.partyId,
-                                        partyName: partyName,
-                                        ledgerData: l,
-                                      ),
-                                    ),
-                                  );
-                                  if (updated == true) loadLedger();
-                                },
+                              // Voucher number
+                              Text(
+                                "Voucher: ${l['voucher_no']}",
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.redAccent, size: 16,),
-                                onPressed: () =>
-                                    _deleteLedger(l['ledger_id']),
+                              const SizedBox(height: 4),
+                              // Details
+                              Text("Date: ${l['entry_date']}"),
+                              Text("Type: ${l['transaction_type']}"),
+                              Text(
+                                "Narration: ${l['narration'] ?? '-'}",
+                                style: const TextStyle(fontSize: 12, color: Colors.green),
+                              ),
+                              Text(
+                                "Remark: ${l['remark'] ?? '-'}",
+                                style: const TextStyle(fontSize: 12, color: Colors.purple),
                               ),
                             ],
                           ),
                         ),
-                      ],
-                    );
-                  }).toList(),
-                ),
-              ),
+
+                        // Right side: Edit / DrCr / Delete
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  "Dr: ${l['debit']}",
+                                  style: const TextStyle(fontSize: 12, color: Colors.green),
+                                ),
+                                Text(
+                                  "Cr: ${l['credit']}",
+                                  style: const TextStyle(fontSize: 12, color: Colors.red),
+                                ),
+                              ],
+                            ),
+                          ],
+                    ),
+                    ),
+                );
+              },
             ),
           ),
+
           // 🔹 TOTALS FOOTER
           _totalsFooter(),
         ],
@@ -225,7 +196,7 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
   Widget _openingBalanceHeader() {
     return Container(
       margin: const EdgeInsets.all(8),
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -233,7 +204,7 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
           BoxShadow(
             color: Colors.black12,
             blurRadius: 4,
-            offset: Offset(0, 1),
+            offset: Offset(0, 2),
           ),
         ],
       ),

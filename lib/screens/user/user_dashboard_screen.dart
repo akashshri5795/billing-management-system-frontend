@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rbcledger/screens/user/party_list_screen.dart';
+import 'package:rbcledger/screens/user/user_party_list_screen.dart';
 import '../../services/auth_service.dart';
 import '../login_screen.dart';
 
@@ -10,10 +10,14 @@ class UserDashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("User Dashboard"),
+        title: const Text("User Dashboard",
+          style: TextStyle(
+            color: Colors.white,
+          ),),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.white),
+            tooltip: "Log out",
             onPressed: () async {
               await AuthService.logout();
               Navigator.pushAndRemoveUntil(
@@ -24,6 +28,7 @@ class UserDashboardScreen extends StatelessWidget {
             },
           )
         ],
+        backgroundColor: Colors.teal,
       ),
       body: Padding(
         padding: const EdgeInsets.all(12),
@@ -37,7 +42,7 @@ class UserDashboardScreen extends StatelessWidget {
               title: "Parties",
               icon: Icons.store,
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => PartyListScreen()));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => UserPartyListScreen()));
               },
             )
           ),
@@ -56,20 +61,21 @@ class UserDashboardScreen extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Card(
-        elevation: 4,
+        elevation: 6,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 48),
+            Icon(icon, size: 48, color:Colors.teal),
             const SizedBox(height: 10),
             Text(
               title,
               style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.normal,
+                color: Colors.grey
               ),
             )
           ],

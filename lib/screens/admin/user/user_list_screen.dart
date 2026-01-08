@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:rbcledger/screens/admin/add_user_screen.dart';
-import 'package:rbcledger/screens/admin/user_details_screen.dart';
+import 'package:rbcledger/screens/admin/user/add_user_screen.dart';
+import 'package:rbcledger/screens/admin/user/user_details_screen.dart';
 import 'package:rbcledger/services/user_service.dart';
-import '../../services/auth_service.dart';
-import '../login_screen.dart';
+import '../../../services/auth_service.dart';
+import '../../login_screen.dart';
 
 class UserListScreen extends StatefulWidget {
   const UserListScreen({super.key});
@@ -18,12 +18,12 @@ class _UserListScreenState extends State<UserListScreen> {
   @override
   void initState() {
     super.initState();
-    users = UserService.getUsers();
+    users = UserService.getAllUsers();
   }
 
   void loadUsers() {
     setState(() {
-      users = UserService.getUsers();
+      users = UserService.getAllUsers();
     });
   }
 
@@ -39,24 +39,27 @@ class _UserListScreenState extends State<UserListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("User List"),
+        title: const Text("User List",style: TextStyle(color: Colors.white),),
         actions: [
-          IconButton(onPressed: logout, icon: const Icon(Icons.logout)),
+          IconButton(
+            icon: const Icon(Icons.add_box, color: Colors.white),
+            tooltip: "Add User",
+            onPressed: () async {
+              final added = await Navigator.push<bool>(
+                context,
+                MaterialPageRoute(builder: (_) => const AddUserScreen()),
+              );
+
+              if (added == true) {
+                loadUsers();
+              }
+            },
+          ),
+          IconButton(onPressed: logout, icon: const Icon(Icons.login_outlined, color: Colors.white), tooltip: "Logout",),
         ],
+        backgroundColor: Colors.teal,
       ),
 
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final added = await Navigator.push<bool>(
-            context,
-            MaterialPageRoute(builder: (_) => const AddUserScreen()),
-          );
-          if(added == true){
-            loadUsers();
-          }
-        },
-        child: const Icon(Icons.add),
-      ),
       body: FutureBuilder<List<dynamic>>(
         future: users,
         builder: (context, snapshot) {
@@ -75,8 +78,8 @@ class _UserListScreenState extends State<UserListScreen> {
               final user = userList[index];
               return ListTile(
                 title: Text(user['name']),
-                subtitle: Text(user['email'] ?? ""),
-                trailing: const Icon(Icons.arrow_forward),
+                subtitle: Text(user['role'] ?? "", style: TextStyle(color: Colors.teal, fontStyle: FontStyle.italic),),
+                trailing: const Icon(Icons.arrow_forward, color: Colors.teal,),
                 onTap: () async  {
                   final refreshed = await Navigator.push<bool>(
                     context,

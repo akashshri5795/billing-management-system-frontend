@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:rbcledger/screens/admin/party_list_screen.dart';
-import 'package:rbcledger/screens/admin/user_list_screen.dart';
+import 'package:rbcledger/screens/admin/party/party_list_screen.dart';
+import 'package:rbcledger/screens/admin/user/user_list_screen.dart';
 import '../../services/auth_service.dart';
 import '../login_screen.dart';
 
@@ -11,10 +11,10 @@ class AdminDashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Admin Dashboard"),
+        title: const Text("Admin Dashboard", style: TextStyle(color: Colors.white),),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.white,),
             onPressed: () async {
               await AuthService.logout();
               Navigator.pushAndRemoveUntil(
@@ -25,6 +25,7 @@ class AdminDashboardScreen extends StatelessWidget {
             },
           )
         ],
+        backgroundColor: Colors.teal,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

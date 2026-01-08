@@ -152,7 +152,7 @@ class _EditLedgerEntryScreenState extends State<EditLedgerEntryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Edit: ${widget.partyName}")),
+      appBar: AppBar(title: Text("Edit: ${widget.partyName}", style: TextStyle(color: Colors.white),), backgroundColor: Colors.teal,),
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -168,7 +168,7 @@ class _EditLedgerEntryScreenState extends State<EditLedgerEntryScreen> {
                 onTap: pickDate,
                 decoration: const InputDecoration(
                   labelText: "Entry Date",
-                  suffixIcon: Icon(Icons.calendar_today),
+                  suffixIcon: Icon(Icons.calendar_today, color: Colors.teal,),
                 ),
                 validator: (v) =>
                 v == null || v.isEmpty ? "Select date" : null,

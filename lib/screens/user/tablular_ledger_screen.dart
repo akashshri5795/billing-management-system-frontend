@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:rbcledger/screens/admin/ledger/add_ledger_screen.dart';
-import 'package:rbcledger/screens/admin/ledger/edit_ledger_screen.dart';
 import 'package:rbcledger/services/ledger_service.dart';
 
 class TabularLedgerScreen extends StatefulWidget {
@@ -50,7 +48,6 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
       }
       setState(() {
         ledgerList = data['ledger'] ?? [];
-
         partyName = data['party']?['name'] ?? 'Party';
         openingBalanceDebit = safeDouble(data['opening_balance_dr']);
         openingBalanceCredit = safeDouble(data['opening_balance_cr']);
@@ -67,81 +64,15 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
   }
 
 
-  void _deleteLedger(int ledgerId) async {
-    try {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text("Confirm Delete"),
-          content: const Text("Are you sure you want to delete this entry?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text("Delete"),
-            ),
-          ],
-        ),
-      );
-
-      if (confirmed != true) return;
-
-      // Call LedgerService to delete
-      final success = await LedgerService.deleteLedger(ledgerId);
-
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Ledger entry deleted successfully")),
-        );
-        loadLedger(); // refresh ledger list
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
-    }
-  }
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(partyName, style: TextStyle(color: Colors.white),),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.add_box, color: Colors.white,),
-          tooltip: "Add Ledger Entry",
-          onPressed: () async {
-            final added = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => AddLedgerEntryScreen(
-                  partyId: widget.partyId,
-                  partyName: partyName,
-                ),
-              ),
-            );
-
-            if (added == true) {
-              loadLedger(); // refresh ledger
-            }
-          },
-        ),
-      ],
-        backgroundColor: Colors.teal,
-      ),
+      appBar: AppBar(title: Text(partyName, style: TextStyle(color: Colors.white),), backgroundColor: Colors.teal,),
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : Column(
         children: [
-          // 🔹 OPENING BALANCE HEADER
           _openingBalanceHeader(),
-
-          // 🔹 LEDGER LIST
-          // 🔹 LEDGER TABLE
           Expanded(
             child: ledgerList.isEmpty
                 ? const Center(child: Text("No ledger entries"))
@@ -150,7 +81,7 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
                 child: DataTable(
-                  columnSpacing: 20,
+                  columnSpacing: 25,
                   headingRowColor: MaterialStateProperty.all(Colors.grey.shade300),
                   columns: const [
                     DataColumn(label: Text("Date")),
@@ -158,7 +89,6 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
                     DataColumn(label: Text("Type")),
                     DataColumn(label: Text("Debit")),
                     DataColumn(label: Text("Credit")),
-                    DataColumn(label: Text("Actions")),
                   ],
                   rows: ledgerList.map<DataRow>((l) {
                     return DataRow(
@@ -178,34 +108,6 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
                             style: const TextStyle(color: Colors.red),
                           ),
                         ),
-                        DataCell(
-                          Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.orange, size: 16),
-                                onPressed: () async {
-                                  final updated = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => EditLedgerEntryScreen(
-                                        ledgerId: l['ledger_id'],
-                                        partyId: widget.partyId,
-                                        partyName: partyName,
-                                        ledgerData: l,
-                                      ),
-                                    ),
-                                  );
-                                  if (updated == true) loadLedger();
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.redAccent, size: 16,),
-                                onPressed: () =>
-                                    _deleteLedger(l['ledger_id']),
-                              ),
-                            ],
-                          ),
-                        ),
                       ],
                     );
                   }).toList(),
@@ -221,7 +123,6 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
   }
 
   // ================== WIDGETS ==================
-
   Widget _openingBalanceHeader() {
     return Container(
       margin: const EdgeInsets.all(8),

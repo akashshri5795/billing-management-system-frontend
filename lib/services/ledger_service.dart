@@ -36,6 +36,14 @@ class LedgerService {
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
+    final role = prefs.getString("role");
+
+    if (token == null || role == null) {
+      throw Exception("User not logged in");
+    }
+    if (role != "admin") {
+      throw Exception("Unauthorized: Only admin can add ledger entry");
+    }
 
     final response = await http.post(
       Uri.parse("${ApiConfig.baseUrl}/ledger"),
@@ -64,9 +72,20 @@ class LedgerService {
   static Future<List<dynamic>> getLedgerByParty(int partyId) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
+    final role = prefs.getString("role");
+
+    if (token == null || role == null) {
+      throw Exception("User not logged in");
+    }
+    String url;
+    if (role == "admin") {
+      url = "${ApiConfig.baseUrl}/ledger-details/$partyId";
+    } else {
+      url = "${ApiConfig.baseUrl}/user/ledger-details/$partyId";
+    }
 
     final response = await http.get(
-      Uri.parse("${ApiConfig.baseUrl}/ledger-details/$partyId"),
+      Uri.parse(url),
       headers: {
         "Accept": "application/json",
         "Authorization": "Bearer $token",
@@ -84,15 +103,21 @@ class LedgerService {
   static Future<bool> deleteLedger(int id) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
+    final role = prefs.getString("role");
 
+    if (token == null || role == null) {
+      throw Exception("User not logged in");
+    }
+    if (role != "admin") {
+      throw Exception("Unauthorized: Only admin can delete Ledger");
+    }
     final url = Uri.parse('${ApiConfig.baseUrl}/ledger/$id');
-
     try {
       final response = await http.delete(
         url,
         headers: {
           "Accept": "application/json",
-          "Authorization": "Bearer $token", // <-- important!
+          "Authorization": "Bearer $token",
         },
       );
 
@@ -123,6 +148,14 @@ class LedgerService {
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
+    final role = prefs.getString("role");
+
+    if (token == null || role == null) {
+      throw Exception("User not logged in");
+    }
+    if (role != "admin") {
+      throw Exception("Unauthorized: Only admin can update Ledger");
+    }
 
     final response = await http.put(
       Uri.parse("${ApiConfig.baseUrl}/ledger/$ledgerId"),
