@@ -18,9 +18,9 @@ class LedgerPdfService {
       "56/50, Site-4, Sahibabad Industrial Area, Ghaziabad-201010";
   static const String companyGSTIN =
       "CIN : U7900DL2012PTC234271; GSTIN : 09AAFCR8431A1ZJ";
-  static final pw.TextStyle tableDataStyle = pw.TextStyle(fontSize: 9);
+  static final pw.TextStyle tableDataStyle = pw.TextStyle(fontSize: 8);
   static final pw.TextStyle tableHeaderStyle = pw.TextStyle(
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: pw.FontWeight.bold,
   );
 
@@ -68,7 +68,7 @@ class LedgerPdfService {
                     alignment: pw.Alignment.centerRight,
                     child: pw.Text(
                       safeDouble(l['debit']).toStringAsFixed(2),
-                      style: tableDataStyle.copyWith(color: PdfColors.green),
+                      style: tableDataStyle,
                     ),
                   ),
                 ),
@@ -78,7 +78,7 @@ class LedgerPdfService {
                     alignment: pw.Alignment.centerRight,
                     child: pw.Text(
                       safeDouble(l['credit']).toStringAsFixed(2),
-                      style: tableDataStyle.copyWith(color: PdfColors.red800),
+                      style: tableDataStyle,
                     ),
                   ),
                 ),
@@ -88,21 +88,26 @@ class LedgerPdfService {
 
           // TOTAL row
           final totalRow = pw.TableRow(
-            decoration: const pw.BoxDecoration(color: PdfColors.grey300),
+            decoration: const pw.BoxDecoration(color: PdfColors.grey300,
+              border: pw.Border(
+                top: pw.BorderSide(width: 0.5),
+                bottom: pw.BorderSide(width: 0.5),
+              ),
+            ),
             children: [
+              pw.Container(),
+              pw.Container(),
+              pw.Container(),
               pw.Padding(
                 padding: const pw.EdgeInsets.all(2),
                 child: pw.Text(
                   'TOTAL',
                   style: pw.TextStyle(
                     fontWeight: pw.FontWeight.bold,
-                    fontSize: 9,
+                    fontSize: 8,
                   ),
                 ),
               ),
-              pw.Container(),
-              pw.Container(),
-              pw.Container(),
               pw.Padding(
                 padding: const pw.EdgeInsets.all(2),
                 child: pw.Container(
@@ -111,8 +116,7 @@ class LedgerPdfService {
                     safeDouble(totalDebit).toStringAsFixed(2),
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.green,
-                      fontSize: 10,
+                      fontSize: 8,
                     ),
                   ),
                 ),
@@ -125,8 +129,7 @@ class LedgerPdfService {
                     safeDouble(totalCredit).toStringAsFixed(2),
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.red,
-                      fontSize: 10,
+                      fontSize: 8,
                     ),
                   ),
                 ),
@@ -137,7 +140,6 @@ class LedgerPdfService {
           return [
             // Header
             pw.Header(
-              level: 0,
               child: pw.Center(
                 child: pw.Column(
                   mainAxisSize: pw.MainAxisSize.min,
@@ -145,28 +147,28 @@ class LedgerPdfService {
                     pw.Text(
                       companyName,
                       style: pw.TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: pw.FontWeight.bold,
                       ),
                     ),
                     pw.SizedBox(height: 2),
-                    pw.Text(companyAddress, style: pw.TextStyle(fontSize: 12)),
+                    pw.Text(companyAddress, style: pw.TextStyle(fontSize: 10)),
                     pw.SizedBox(height: 2),
-                    pw.Text(companyGSTIN, style: pw.TextStyle(fontSize: 12)),
+                    pw.Text(companyGSTIN, style: pw.TextStyle(fontSize: 10)),
                     pw.SizedBox(height: 4),
                     pw.Text(
                       "LEDGER",
                       style: pw.TextStyle(
-                        fontSize: 12,
+                        fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
-                        letterSpacing: 2,
+                        letterSpacing: 1,
                       ),
                     ),
                     pw.SizedBox(height: 4),
                     pw.Text(
                       '$partyName ($partyAddress)',
                       style: pw.TextStyle(
-                        fontSize: 14,
+                        fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
                       ),
                     ),
@@ -185,14 +187,14 @@ class LedgerPdfService {
                     'Opening Debit: ${safeDouble(openingBalanceDebit).toStringAsFixed(2)}',
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.green,
+                      fontSize: 10,
                     ),
                   ),
                   pw.Text(
                     'Opening Credit: ${safeDouble(openingBalanceCredit).toStringAsFixed(2)}',
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.red,
+                      fontSize: 10,
                     ),
                   ),
                 ],
@@ -203,41 +205,68 @@ class LedgerPdfService {
 
             // Ledger table
             pw.Table(
-              border: pw.TableBorder.all(width: 0.1),
               children: [
-                // Header row
                 pw.TableRow(
-                  decoration: const pw.BoxDecoration(color: PdfColors.grey200),
-                  children:
-                      [
-                            'Date',
-                            'Type',
-                            'Voucher No',
-                            'Narration',
-                            'Debit',
-                            'Credit',
-                          ]
-                          .map(
-                            (e) => pw.Padding(
-                              padding: const pw.EdgeInsets.all(4),
-                              child: pw.Text(e, style: tableHeaderStyle),
-                            ),
-                          )
-                          .toList(),
+                  decoration: const pw.BoxDecoration(
+                    color: PdfColors.grey200,
+                    border: pw.Border(
+                      top: pw.BorderSide(width: 0.5),
+                      bottom: pw.BorderSide(width: 0.5),
+                    ),
+                  ),
+                  children: [
+                    // Date
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(4),
+                      child: pw.Text('Date', style: tableHeaderStyle),
+                    ),
+
+                    // Type
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(4),
+                      child: pw.Text('Type', style: tableHeaderStyle),
+                    ),
+
+                    // Voucher No
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(4),
+                      child: pw.Text('Voucher No', style: tableHeaderStyle),
+                    ),
+
+                    // Narration
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(4),
+                      child: pw.Text('Narration', style: tableHeaderStyle),
+                    ),
+
+                    // Debit (RIGHT ALIGN)
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(4),
+                      child: pw.Container(
+                        alignment: pw.Alignment.centerRight,
+                        child: pw.Text('Debit', style: tableHeaderStyle),
+                      ),
+                    ),
+
+                    // Credit (RIGHT ALIGN)
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(4),
+                      child: pw.Container(
+                        alignment: pw.Alignment.centerRight,
+                        child: pw.Text('Credit', style: tableHeaderStyle),
+                      ),
+                    ),
+                  ],
                 ),
-                // Ledger rows
+            // Ledger rows
                 ...ledgerRows,
                 // TOTAL row
                 totalRow,
               ],
             ),
-
-            pw.SizedBox(height: 8),
-
-            // Totals & balance
+            pw.SizedBox(height: 4),
             pw.Container(
-              color: PdfColors.grey200,
-              padding: const pw.EdgeInsets.all(6),
+              padding: const pw.EdgeInsets.all(2),
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.end,
                 children: [
@@ -245,7 +274,6 @@ class LedgerPdfService {
                     'Total Debit: ${safeDouble(totalDebit + openingBalanceDebit).toStringAsFixed(2)}',
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.green,
                       fontSize: 10,
                     ),
                   ),
@@ -254,7 +282,6 @@ class LedgerPdfService {
                     'Total Credit: ${safeDouble(totalCredit + openingBalanceCredit).toStringAsFixed(2)}',
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.red700,
                       fontSize: 10,
                     ),
                   ),
@@ -263,7 +290,6 @@ class LedgerPdfService {
                     'Balance: ${safeDouble(balance).toStringAsFixed(2)}',
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
-                      color: balance >= 0 ? PdfColors.green : PdfColors.red,
                       fontSize: 10,
                     ),
                   ),

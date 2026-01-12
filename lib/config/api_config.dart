@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 // class ApiConfig {
-//   static const String baseUrl = "https://www.api-rbcledger.rbcreporting.in/api";
+//   static const String baseUrl = "https://api-rbcledger.rbcreporting.in/api";
 // }
 class ApiConfig {
   static String get baseUrl {
