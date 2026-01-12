@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rbcledger/screens/admin/ledger/add_ledger_screen.dart';
 import 'package:rbcledger/screens/admin/ledger/edit_ledger_screen.dart';
@@ -13,7 +14,6 @@ class TabularLedgerScreen extends StatefulWidget {
 
 class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
   bool loading = true;
-
   List<dynamic> ledgerList = [];
 
   double totalDebit = 0;
@@ -32,25 +32,22 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
 
   Future<void> loadLedger() async {
     try {
-      final List<dynamic> response =
-      await LedgerService.getLedgerByParty(widget.partyId);
+      final response = await LedgerService.getLedgerByParty(widget.partyId);
 
-      if (response.isEmpty) {
-        throw Exception('No ledger data found');
-      }
+      if (response.isEmpty) throw Exception('No ledger data found');
 
       final data = response.first;
 
-      double safeDouble(dynamic val) {
-        if (val == null) return 0;
-        if (val is double) return val;
-        if (val is int) return val.toDouble();
-        if (val is String) return double.tryParse(val) ?? 0;
+      double safeDouble(dynamic v) {
+        if (v == null) return 0;
+        if (v is int) return v.toDouble();
+        if (v is double) return v;
+        if (v is String) return double.tryParse(v) ?? 0;
         return 0;
       }
+
       setState(() {
         ledgerList = data['ledger'] ?? [];
-
         partyName = data['party']?['name'] ?? 'Party';
         openingBalanceDebit = safeDouble(data['opening_balance_dr']);
         openingBalanceCredit = safeDouble(data['opening_balance_cr']);
@@ -59,199 +56,324 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
         balance = safeDouble(data['balance']);
       });
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       setState(() => loading = false);
     }
   }
 
-
   void _deleteLedger(int ledgerId) async {
-    try {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text("Confirm Delete"),
-          content: const Text("Are you sure you want to delete this entry?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text("Delete"),
-            ),
-          ],
-        ),
-      );
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Confirm Delete"),
+        content: const Text("Delete this ledger entry?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete"),
+          ),
+        ],
+      ),
+    );
 
-      if (confirmed != true) return;
+    if (confirm != true) return;
 
-      // Call LedgerService to delete
-      final success = await LedgerService.deleteLedger(ledgerId);
-
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Ledger entry deleted successfully")),
-        );
-        loadLedger(); // refresh ledger list
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
-    }
+    final success = await LedgerService.deleteLedger(ledgerId);
+    if (success) loadLedger();
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(partyName, style: TextStyle(color: Colors.white),),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.add_box, color: Colors.white,),
-          tooltip: "Add Ledger Entry",
-          onPressed: () async {
-            final added = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => AddLedgerEntryScreen(
-                  partyId: widget.partyId,
-                  partyName: partyName,
-                ),
-              ),
-            );
-
-            if (added == true) {
-              loadLedger(); // refresh ledger
-            }
-          },
-        ),
-      ],
+      appBar: AppBar(
+        title: Text(partyName, style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.teal,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_box, color: Colors.white),
+            onPressed: () async {
+              final added = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => AddLedgerEntryScreen(
+                    partyId: widget.partyId,
+                    partyName: partyName,
+                  ),
+                ),
+              );
+              if (added == true) loadLedger();
+            },
+          ),
+        ],
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : Column(
-        children: [
-          // 🔹 OPENING BALANCE HEADER
-          _openingBalanceHeader(),
+              children: [
+                _openingBalanceHeader(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: DataTable(
+                        headingRowColor: MaterialStateProperty.all(
+                          Colors.grey.shade300,
+                        ),
+                        columnSpacing: 20,
+                        columns: const [
+                          DataColumn(
+                            label: Text(
+                              "Date",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              "Type",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              "Voucher No",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              "Narration",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            numeric: true,
+                            label: Align(
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                "Debit",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            numeric: true,
+                            label: Align(
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                "Credit",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              "Actions",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
 
-          // 🔹 LEDGER LIST
-          // 🔹 LEDGER TABLE
-          Expanded(
-            child: ledgerList.isEmpty
-                ? const Center(child: Text("No ledger entries"))
-                : SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: DataTable(
-                  columnSpacing: 20,
-                  headingRowColor: MaterialStateProperty.all(Colors.grey.shade300),
-                  columns: const [
-                    DataColumn(label: Text("Date")),
-                    DataColumn(label: Text("Voucher")),
-                    DataColumn(label: Text("Type")),
-                    DataColumn(label: Text("Debit")),
-                    DataColumn(label: Text("Credit")),
-                    DataColumn(label: Text("Actions")),
-                  ],
-                  rows: ledgerList.map<DataRow>((l) {
-                    return DataRow(
-                      cells: [
-                        DataCell(Text(l['entry_date'] ?? '-')),
-                        DataCell(Text(l['voucher_no'] ?? '-')),
-                        DataCell(Text(l['transaction_type'] ?? '-')),
-                        DataCell(
-                          Text(
-                            (l['debit'] ?? 0).toString(),
-                            style: const TextStyle(color: Colors.green),
-                          ),
-                        ),
-                        DataCell(
-                          Text(
-                            (l['credit'] ?? 0).toString(),
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        ),
-                        DataCell(
-                          Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.orange, size: 16),
-                                onPressed: () async {
-                                  final updated = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => EditLedgerEntryScreen(
-                                        ledgerId: l['ledger_id'],
-                                        partyId: widget.partyId,
-                                        partyName: partyName,
-                                        ledgerData: l,
+                        /// ✅ CORRECT ROWS
+                        rows: [
+                          ...ledgerList.map<DataRow>((l) {
+                            return DataRow(
+                              cells: [
+                                DataCell(
+                                  Text(
+                                    l['entry_date'] ?? '-',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(
+                                    l['transaction_type'] ?? '-',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(
+                                    l['voucher_no'] ?? '-',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(
+                                    l['narration'] ?? '-',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                                DataCell(
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      (l['debit'] ?? 0).toString(),
+                                      style: const TextStyle(
+                                        color: Colors.green,
+                                        fontSize: 12,
                                       ),
                                     ),
-                                  );
-                                  if (updated == true) loadLedger();
-                                },
+                                  ),
+                                ),
+                                DataCell(
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      (l['credit'] ?? 0).toString(),
+                                      style: const TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.edit,
+                                          size: 16,
+                                          color: Colors.orange,
+                                        ),
+                                        onPressed: () async {
+                                          final updated = await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  EditLedgerEntryScreen(
+                                                    ledgerId: l['ledger_id'],
+                                                    partyId: widget.partyId,
+                                                    partyName: partyName,
+                                                    ledgerData: l,
+                                                  ),
+                                            ),
+                                          );
+                                          if (updated == true) loadLedger();
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          size: 16,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () =>
+                                            _deleteLedger(l['ledger_id']),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          }),
+
+                          /// 🔹 TOTAL ROW
+                          DataRow(
+                            color: MaterialStateProperty.all(
+                              Colors.grey.shade200,
+                            ),
+                            cells: [
+                              const DataCell(
+                                Text(
+                                  "TOTAL",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.redAccent, size: 16,),
-                                onPressed: () =>
-                                    _deleteLedger(l['ledger_id']),
+                              const DataCell(Text("")),
+                              const DataCell(Text("")),
+                              const DataCell(Text("")),
+                              DataCell(
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    totalDebit.toStringAsFixed(2),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
                               ),
+                              DataCell(
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    totalCredit.toStringAsFixed(2),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const DataCell(Text("")),
                             ],
                           ),
-                        ),
-                      ],
-                    );
-                  }).toList(),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+
+                _totalsFooter(),
+              ],
             ),
-          ),
-          // 🔹 TOTALS FOOTER
-          _totalsFooter(),
-        ],
-      ),
     );
   }
 
-  // ================== WIDGETS ==================
+  // ===================== UI HELPERS =====================
 
   Widget _openingBalanceHeader() {
-    return Container(
+    return Card(
       margin: const EdgeInsets.all(8),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Opening Balance",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Opening Balance",
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-          ),
-          const SizedBox(height: 12),
-          _balanceRow("Debit", openingBalanceDebit, Colors.green),
-          const SizedBox(height: 6),
-          _balanceRow("Credit", openingBalanceCredit, Colors.red),
-        ],
+            const SizedBox(height: 8),
+            _balanceRow("Debit", openingBalanceDebit, Colors.green),
+            _balanceRow("Credit", openingBalanceCredit, Colors.red),
+          ],
+        ),
       ),
     );
   }
@@ -259,16 +381,19 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
   Widget _totalsFooter() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        border: const Border(
-          top: BorderSide(color: Colors.black12),
-        ),
-      ),
+      color: Colors.grey.shade200,
       child: Column(
         children: [
-          _balanceRow("Total Debit", totalDebit, Colors.green),
-          _balanceRow("Total Credit", totalCredit, Colors.red),
+          _balanceRow(
+            "Total Debit",
+            totalDebit + openingBalanceDebit,
+            Colors.green,
+          ),
+          _balanceRow(
+            "Total Credit",
+            totalCredit + openingBalanceCredit,
+            Colors.red,
+          ),
           const Divider(),
           _balanceRow(
             "Balance",
@@ -281,8 +406,12 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
     );
   }
 
-  Widget _balanceRow(String label, double value, Color color,
-      {bool bold = false}) {
+  Widget _balanceRow(
+    String label,
+    double value,
+    Color color, {
+    bool bold = false,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

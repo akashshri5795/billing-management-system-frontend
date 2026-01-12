@@ -23,6 +23,7 @@ class _ViewLedgerScreenState extends State<ViewLedgerScreen> {
   double balance = 0;
 
   String partyName = 'Party';
+  String partyAddress = 'Address';
 
   @override
   void initState() {
@@ -51,6 +52,7 @@ class _ViewLedgerScreenState extends State<ViewLedgerScreen> {
       setState(() {
         ledgerList = data['ledger'] ?? [];
         partyName = data['party']?['name'] ?? 'Party';
+        partyAddress = data['party']?['address'] ?? 'Address';
         openingBalanceDebit = safeDouble(data['opening_balance_dr']);
         openingBalanceCredit = safeDouble(data['opening_balance_cr']);
         totalDebit = safeDouble(data['total_debit']);
@@ -96,6 +98,7 @@ class _ViewLedgerScreenState extends State<ViewLedgerScreen> {
               MaterialPageRoute(
                 builder: (_) => LedgerPdfPreviewScreen(
                   partyName: partyName,
+                  partyAddress: partyAddress,
                   ledgerList: ledgerList,
                   openingBalanceDebit: openingBalanceDebit,
                   openingBalanceCredit: openingBalanceCredit,

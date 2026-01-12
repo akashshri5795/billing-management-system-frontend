@@ -4,6 +4,7 @@ import 'package:rbcledger/services/ledger_pdf_service.dart';
 
 class LedgerPdfPreviewScreen extends StatelessWidget {
   final String partyName;
+  final String partyAddress;
   final List<dynamic> ledgerList;
   final double openingBalanceDebit;
   final double openingBalanceCredit;
@@ -14,6 +15,7 @@ class LedgerPdfPreviewScreen extends StatelessWidget {
   const LedgerPdfPreviewScreen({
     super.key,
     required this.partyName,
+    required this.partyAddress,
     required this.ledgerList,
     required this.openingBalanceDebit,
     required this.openingBalanceCredit,
@@ -33,6 +35,7 @@ class LedgerPdfPreviewScreen extends StatelessWidget {
         build: (format) async {
           return await LedgerPdfService.generateLedgerPdf(
             partyName: partyName,
+            partyAddress: partyAddress,
             ledgerList: ledgerList,
             openingBalanceDebit: openingBalanceDebit,
             openingBalanceCredit: openingBalanceCredit,
