@@ -8,6 +8,9 @@ class TransactionTypeService {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
 
+    if (token == null) {
+      throw Exception("No auth token found");
+    }
     final response = await http.get(
       Uri.parse("${ApiConfig.baseUrl}/transaction_type"),
       headers: {

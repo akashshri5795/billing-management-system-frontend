@@ -22,6 +22,7 @@ class _AddPartyScreenState extends State<AddPartyScreen> {
   bool loading = false;
   bool usersLoading = true;
   String type = 'Dr';
+  String? nameError;
 
 
   List<UserModel> users = [];
@@ -31,6 +32,13 @@ class _AddPartyScreenState extends State<AddPartyScreen> {
   void initState() {
     super.initState();
     loadUsers();
+    nameController.addListener(() {
+      if (nameError != null) {
+        setState(() {
+          nameError = null;
+        });
+      }
+    });
   }
 
   Future<void> loadUsers() async {
@@ -114,29 +122,44 @@ class _AddPartyScreenState extends State<AddPartyScreen> {
       return;
     }
 
-    setState(() => loading = true);
+    setState(() {
+      loading = true;
+      nameError = null;
+    });
 
     try {
       await PartyService.createParty(
         name: nameController.text.trim(),
         address: addressController.text.trim(),
-        phone: phoneController.text.trim(),
-        email: emailController.text.trim(),
-        type:type,
-        openingBalance: openingBalanceController.text.isEmpty ? 0.0
-            : double.parse(openingBalanceController.text),
-
+        phone: phoneController.text.trim().isEmpty ? null : phoneController.text.trim(),
+        email: emailController.text.trim().isEmpty ? null : emailController.text.trim(),
+        type: type,
+        openingBalance: openingBalanceController.text.isEmpty ? 0.0 : double.parse(openingBalanceController.text),
         userIds: selectedUserIds,
       );
 
       Navigator.pop(context, true);
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.toString())));
+      if (e is Map<String, dynamic>) {
+        if (e.containsKey('name')) {
+          setState(() {
+            nameError = e['name'][0];
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Please check your input')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
     } finally {
       setState(() => loading = false);
     }
   }
+
 
   @override
   void dispose() {
@@ -165,7 +188,15 @@ class _AddPartyScreenState extends State<AddPartyScreen> {
                   labelText: "Name",
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) => v!.isEmpty ? "Name required" : null,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return "Name required";
+                  }
+                  if (nameError != null) {
+                    return nameError;
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 12),
 
@@ -188,7 +219,6 @@ class _AddPartyScreenState extends State<AddPartyScreen> {
                   labelText: "Phone",
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) => v!.isEmpty ? "Phone required" : null,
               ),
               const SizedBox(height: 12),
 
@@ -199,7 +229,6 @@ class _AddPartyScreenState extends State<AddPartyScreen> {
                   labelText: "Email",
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) => v!.isEmpty ? "Email required" : null,
               ),
               const SizedBox(height: 12),
 

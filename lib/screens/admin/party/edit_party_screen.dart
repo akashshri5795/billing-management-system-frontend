@@ -25,6 +25,7 @@ class _EditPartyScreenState extends State<EditPartyScreen> {
   bool partyLoading = true;
 
   String type = 'Dr';
+  String? nameError;
 
   List<UserModel> users = [];
   List<int> selectedUserIds = [];
@@ -33,6 +34,13 @@ class _EditPartyScreenState extends State<EditPartyScreen> {
   void initState() {
     super.initState();
     _loadInitialData();
+    nameController.addListener(() {
+      if (nameError != null) {
+        setState(() {
+          nameError = null;
+        });
+      }
+    });
   }
 
   Future<void> _loadInitialData() async {
@@ -40,14 +48,13 @@ class _EditPartyScreenState extends State<EditPartyScreen> {
       _loadUsers(),
       _loadParty(),
     ]);
-
     setState(() => partyLoading = false);
   }
 
   Future<void> _loadUsers() async {
     final data = await UserService.getUsers();
     users = data.map((e) => UserModel.fromJson(e)).toList();
-    usersLoading = false;
+    setState(() => usersLoading = false);
   }
 
   Future<void> _loadParty() async {
@@ -71,12 +78,13 @@ class _EditPartyScreenState extends State<EditPartyScreen> {
 
     selectedUserIds =
         (party['user_ids'] as List<dynamic>).map((e) => e as int).toList();
+
+    setState(() {}); // Update UI with loaded party info
   }
 
   /// USER SELECTION DIALOG
   Future<void> _openUserSelectionDialog() async {
     List<int> tempSelected = List.from(selectedUserIds);
-
     await showDialog(
       context: context,
       builder: (context) {
@@ -97,9 +105,11 @@ class _EditPartyScreenState extends State<EditPartyScreen> {
                       subtitle: Text(user.role),
                       onChanged: (checked) {
                         setDialogState(() {
-                          checked == true
-                              ? tempSelected.add(user.id)
-                              : tempSelected.remove(user.id);
+                          if (checked == true) {
+                            tempSelected.add(user.id);
+                          } else {
+                            tempSelected.remove(user.id);
+                          }
                         });
                       },
                     );
@@ -130,15 +140,18 @@ class _EditPartyScreenState extends State<EditPartyScreen> {
   Future<void> updateParty() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => loading = true);
+    setState(() {
+      loading = true;
+      nameError = null; // Clear previous error
+    });
 
     try {
       await PartyService.updateParty(
         partyId: widget.partyId,
         name: nameController.text.trim(),
         address: addressController.text.trim(),
-        phone: phoneController.text.trim(),
-        email: emailController.text.trim(),
+        phone: phoneController.text.trim().isEmpty ? null : phoneController.text.trim(),
+        email: emailController.text.trim().isEmpty ? null : emailController.text.trim(),
         type: type,
         openingBalance: openingBalanceController.text.isEmpty
             ? 0
@@ -148,8 +161,23 @@ class _EditPartyScreenState extends State<EditPartyScreen> {
 
       Navigator.pop(context, true);
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.toString())));
+      if (e is Map<String, dynamic>) {
+        if (e.containsKey('name')) {
+          setState(() {
+            nameError = e['name'][0];
+          });
+          // Trigger validation again to show error
+          _formKey.currentState!.validate();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please check your input')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
     } finally {
       setState(() => loading = false);
     }
@@ -174,21 +202,33 @@ class _EditPartyScreenState extends State<EditPartyScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Edit Party", style: TextStyle(color: Colors.white),),backgroundColor: Colors.teal,),
+      appBar: AppBar(
+        title: const Text("Edit Party", style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.teal,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
-              _textField("Name", nameController),
+              _textField(
+                "Name",
+                nameController,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return "Name required";
+                  }
+                  if (nameError != null) {
+                    return nameError;
+                  }
+                  return null;
+                },
+              ),
               _textField("Address", addressController),
-              _textField("Phone", phoneController,
-                  keyboard: TextInputType.phone),
-              _textField("Email (optional)", emailController),
-
+              _textField("Phone", phoneController, keyboard: TextInputType.phone),
+              _textField("Email", emailController),
               const SizedBox(height: 12),
-
               DropdownButtonFormField<String>(
                 value: type,
                 items: const [
@@ -201,27 +241,20 @@ class _EditPartyScreenState extends State<EditPartyScreen> {
                   border: OutlineInputBorder(),
                 ),
               ),
-
               const SizedBox(height: 12),
-
               _textField(
                 "Opening Balance",
                 openingBalanceController,
-                keyboard:
-                const TextInputType.numberWithOptions(decimal: true),
+                keyboard: const TextInputType.numberWithOptions(decimal: true),
               ),
-
               const SizedBox(height: 16),
-
               ListTile(
                 title: const Text("Assign Users",
                     style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal)),
-                subtitle: Text(
-                    "${selectedUserIds.length} user(s) selected"),
-                trailing: const Icon(Icons.arrow_forward_ios, color: Colors.teal,),
+                subtitle: Text("${selectedUserIds.length} user(s) selected"),
+                trailing: const Icon(Icons.arrow_forward_ios, color: Colors.teal),
                 onTap: _openUserSelectionDialog,
               ),
-
               Wrap(
                 spacing: 8,
                 children: users
@@ -229,9 +262,7 @@ class _EditPartyScreenState extends State<EditPartyScreen> {
                     .map((u) => Chip(label: Text(u.name)))
                     .toList(),
               ),
-
               const SizedBox(height: 24),
-
               loading
                   ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton(
@@ -246,7 +277,7 @@ class _EditPartyScreenState extends State<EditPartyScreen> {
   }
 
   Widget _textField(String label, TextEditingController c,
-      {TextInputType keyboard = TextInputType.text}) {
+      {TextInputType keyboard = TextInputType.text, String? Function(String?)? validator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
@@ -256,8 +287,7 @@ class _EditPartyScreenState extends State<EditPartyScreen> {
           labelText: label,
           border: const OutlineInputBorder(),
         ),
-        validator: (v) =>
-        v == null || v.isEmpty ? "$label required" : null,
+        validator: validator,
       ),
     );
   }

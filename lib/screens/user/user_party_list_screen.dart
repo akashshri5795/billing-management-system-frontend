@@ -11,8 +11,13 @@ class UserPartyListScreen extends StatefulWidget {
 }
 
 class _UserPartyListScreenState extends State<UserPartyListScreen> {
-  List<dynamic> partyList = [];
+  List<dynamic> _allParties = [];
+  List<dynamic> _filteredParties = [];
+
   bool loading = true;
+  bool _isSearching = false;
+
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -24,7 +29,10 @@ class _UserPartyListScreenState extends State<UserPartyListScreen> {
     setState(() => loading = true);
     try {
       final data = await PartyService.getUserPartyList();
-      setState(() => partyList = data);
+      setState(() {
+        _allParties = data;
+        _filteredParties = data;
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
@@ -34,34 +42,98 @@ class _UserPartyListScreenState extends State<UserPartyListScreen> {
     }
   }
 
+  void _searchParty(String query) {
+    if (query.isEmpty) {
+      setState(() => _filteredParties = _allParties);
+      return;
+    }
+
+    setState(() {
+      _filteredParties = _allParties.where((party) {
+        final name = (party['name'] ?? '').toString().toLowerCase();
+        final address = (party['address'] ?? '').toString().toLowerCase();
+        return name.contains(query.toLowerCase()) ||
+            address.contains(query.toLowerCase());
+      }).toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Parties",
-        style: TextStyle(color: Colors.white),
-      ),backgroundColor: Colors.teal),
-
+      appBar: AppBar(
+        backgroundColor: Colors.teal,
+        title: _isSearching
+            ? TextField(
+          controller: _searchController,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Search party...',
+            border: InputBorder.none,
+            hintStyle: TextStyle(color: Colors.white70),
+          ),
+          style: const TextStyle(color: Colors.white),
+          onChanged: _searchParty,
+        )
+            : const Text(
+          "Parties",
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _isSearching ? Icons.close : Icons.search,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              setState(() {
+                if (_isSearching) {
+                  _isSearching = false;
+                  _searchController.clear();
+                  _filteredParties = _allParties;
+                } else {
+                  _isSearching = true;
+                }
+              });
+            },
+          ),
+        ],
+      ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
-          : partyList.isEmpty
+          : _filteredParties.isEmpty
           ? const Center(child: Text("No parties found"))
           : ListView.builder(
-        itemCount: partyList.length,
+        itemCount: _filteredParties.length,
         itemBuilder: (context, index) {
-          final party = partyList[index];
+          final party = _filteredParties[index];
 
           return ListTile(
-            title: Text(party['name'], style: TextStyle(color: Colors.grey.shade800),),
-            subtitle: Text(party['address'] ?? "", style: TextStyle(color: Colors.teal.shade600, fontStyle: FontStyle.italic),),
+            title: Text(
+              party['name'] ?? '',
+              style:
+              TextStyle(color: Colors.grey.shade800),
+            ),
+            subtitle: Text(
+              party['address'] ?? '',
+              style: TextStyle(
+                color: Colors.teal.shade600,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // 📘 Ledger Button
                 IconButton(
-                  icon: const Icon(Icons.leaderboard, color:Colors.blueGrey),
+                  icon: const Icon(
+                    Icons.leaderboard,
+                    color: Colors.blueGrey,
+                  ),
                   tooltip: "View Ledger Entry",
                   onPressed: () async {
-                    final added = await Navigator.push(
+                    final added =
+                    await Navigator.push<bool>(
                       context,
                       MaterialPageRoute(
                         builder: (_) => ViewLedgerScreen(
@@ -78,15 +150,20 @@ class _UserPartyListScreenState extends State<UserPartyListScreen> {
 
                 // ➡ Party Details Button
                 IconButton(
-                  icon: const Icon(Icons.arrow_forward_ios, color: Colors.teal,),
+                  icon: const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.teal,
+                  ),
                   tooltip: "View Party Details",
                   onPressed: () async {
-                    final updated = await Navigator.push(
+                    final updated =
+                    await Navigator.push<bool>(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => UserPartyDetailsScreen(
-                          partyId: party['party_id'],
-                        ),
+                        builder: (_) =>
+                            UserPartyDetailsScreen(
+                              partyId: party['party_id'],
+                            ),
                       ),
                     );
 

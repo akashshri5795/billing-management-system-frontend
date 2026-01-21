@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rbcledger/services/ledger_service.dart';
+import 'package:rbcledger/utils/amount_formatter.dart';
 
 class TabularLedgerScreen extends StatefulWidget {
   final int partyId;
@@ -181,7 +182,7 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
                             Align(
                               alignment: Alignment.centerRight,
                               child: Text(
-                                (l['debit'] ?? 0).toString(),
+                                AmountFormatter.format(l['debit'] ?? 0),
                                 style: const TextStyle(
                                   color: Colors.green,
                                   fontSize: 12,
@@ -193,7 +194,7 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
                             Align(
                               alignment: Alignment.centerRight,
                               child: Text(
-                                (l['credit'] ?? 0).toString(),
+                                AmountFormatter.format(l['credit'] ?? 0),
                                 style: const TextStyle(
                                   color: Colors.red,
                                   fontSize: 12,
@@ -215,7 +216,7 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
                           Text(
                             "TOTAL",
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -227,11 +228,11 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: Text(
-                              totalDebit.toStringAsFixed(2),
+                              AmountFormatter.format(totalDebit),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.green,
-                                fontSize: 14,
+                                fontSize: 12,
                               ),
                             ),
                           ),
@@ -240,11 +241,11 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: Text(
-                              totalCredit.toStringAsFixed(2),
+                              AmountFormatter.format(totalCredit),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.red,
-                                fontSize: 14,
+                                fontSize: 12,
                               ),
                             ),
                           ),

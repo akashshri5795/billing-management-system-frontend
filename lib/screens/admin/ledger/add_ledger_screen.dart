@@ -85,7 +85,7 @@ class _AddLedgerEntryScreenState extends State<AddLedgerEntryScreen> {
         partyId: widget.partyId,
         transactionTypeId: transactionTypeId!,
         entryDate: selectedDate.toIso8601String(),
-        voucherNo: voucherController.text.trim(),
+        voucherNo: voucherController.text.trim().isEmpty ? null : voucherController.text.trim(),
         amount: double.parse(amountController.text),
         type: type,
         narration: narrationController.text.trim(),
@@ -152,8 +152,6 @@ class _AddLedgerEntryScreenState extends State<AddLedgerEntryScreen> {
                 controller: voucherController,
                 decoration:
                 const InputDecoration(labelText: "Voucher No"),
-                validator: (v) =>
-                v!.isEmpty ? "Required" : null,
               ),
               const SizedBox(height: 12),
 

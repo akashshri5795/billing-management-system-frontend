@@ -7,7 +7,7 @@ class PartyService {
   static Future<void> createParty({
     required String name,
     required String address,
-    required String phone,
+    String? phone,
     String? email,
     required String type,
     required double openingBalance,
@@ -41,19 +41,22 @@ class PartyService {
         "user_ids": userIds,
       }),
     );
+    if (response.statusCode == 200 || response.statusCode == 201) return;
 
-    if (response.statusCode != 201 && response.statusCode != 200) {
-      throw Exception(response.body);
+    if (response.statusCode == 422) {
+      throw jsonDecode(response.body)['errors'];
     }
+
+    throw Exception(jsonDecode(response.body)['message'] ?? "Something went wrong");
   }
 
   static Future<void> updateParty({
     required int partyId,
     required String name,
     required String address,
-    required String phone,
-    required String type,
+    String? phone,
     String? email,
+    required String type,
     required double openingBalance,
     required List<int> userIds,
   }) async {
@@ -86,7 +89,7 @@ class PartyService {
     );
 
     if (response.statusCode != 200) {
-      throw Exception("Failed to update party: ${response.body}");
+      throw Exception(jsonDecode(response.body)['message'] ?? "Something went wrong");
     }
   }
 
@@ -185,4 +188,35 @@ class PartyService {
       throw Exception("Failed to load parties");
     }
   }
+
+  static Future<bool> deleteParty(int partyId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+    final role = prefs.getString("role");
+
+    if (token == null || role == null) {
+      throw Exception("User not logged in");
+    }
+    if (role != "admin") {
+      throw Exception("Unauthorized: Only admin can delete party");
+    }
+
+    final url = Uri.parse("${ApiConfig.baseUrl}/party/$partyId");
+    final response = await http.delete(
+      url,
+      headers: {
+        "Accept": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['success'] == true;
+    } else {
+      return false;
+    }
+  }
+  
 }
+

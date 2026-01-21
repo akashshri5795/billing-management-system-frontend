@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rbcledger/screens/user/pdf_preview_ledger_screen.dart';
 import 'package:rbcledger/screens/user/tablular_ledger_screen.dart';
 import 'package:rbcledger/services/ledger_service.dart';
+import 'package:rbcledger/utils/amount_formatter.dart';
 
 class ViewLedgerScreen extends StatefulWidget {
   final int partyId;
@@ -170,11 +171,11 @@ class _ViewLedgerScreenState extends State<ViewLedgerScreen> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
-                                  "Dr: ${l['debit']}",
+                                  "Dr: ${AmountFormatter.format(l['debit'])}",
                                   style: const TextStyle(fontSize: 12, color: Colors.green),
                                 ),
                                 Text(
-                                  "Cr: ${l['credit']}",
+                                  "Cr: ${AmountFormatter.format(l['credit'])}",
                                   style: const TextStyle(fontSize: 12, color: Colors.red),
                                 ),
                               ],
@@ -267,7 +268,7 @@ class _ViewLedgerScreenState extends State<ViewLedgerScreen> {
           ),
         ),
         Text(
-          value.toStringAsFixed(2),
+          AmountFormatter.format(value),
           style: TextStyle(
             color: color,
             fontWeight: bold ? FontWeight.bold : FontWeight.normal,

@@ -172,5 +172,33 @@ class UserService {
   }
 
 
+  static Future<bool> deleteUser(int userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+    final role = prefs.getString("role");
+
+    if (token == null || role == null) {
+      throw Exception("User not logged in");
+    }
+    if (role != "admin") {
+      throw Exception("Unauthorized: Only admin can delete party");
+    }
+
+    final url = Uri.parse("${ApiConfig.baseUrl}/users/$userId");
+    final response = await http.delete(
+      url,
+      headers: {
+        "Accept": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['success'] == true;
+    } else {
+      return false;
+    }
+  }
 
 }

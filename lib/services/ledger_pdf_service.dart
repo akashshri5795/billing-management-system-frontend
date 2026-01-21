@@ -2,22 +2,16 @@ import 'dart:typed_data';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
+import 'package:rbcledger/utils/amount_formatter.dart';
 
 class LedgerPdfService {
   // Safe double conversion
-  static double safeDouble(dynamic val) {
-    if (val == null) return 0;
-    if (val is double) return val;
-    if (val is int) return val.toDouble();
-    if (val is String) return double.tryParse(val) ?? 0;
-    return 0;
-  }
 
-  static const String companyName = "ROHAN BOOK COMPANY PVT. LTD.";
+  static const String companyName = "ROHAN BOOK COMPANY PVT LTD";
   static const String companyAddress =
       "56/50, Site-4, Sahibabad Industrial Area, Ghaziabad-201010";
   static const String companyGSTIN =
-      "CIN : U7900DL2012PTC234271; GSTIN : 09AAFCR8431A1ZJ";
+      "CIN : U74900DL2012PTC234271; GSTIN : 09AAFCR8431A1ZJ";
   static final pw.TextStyle tableDataStyle = pw.TextStyle(fontSize: 8);
   static final pw.TextStyle tableHeaderStyle = pw.TextStyle(
     fontSize: 9,
@@ -67,7 +61,7 @@ class LedgerPdfService {
                   child: pw.Container(
                     alignment: pw.Alignment.centerRight,
                     child: pw.Text(
-                      safeDouble(l['debit']).toStringAsFixed(2),
+                      AmountFormatter.format(l['debit']),
                       style: tableDataStyle,
                     ),
                   ),
@@ -77,7 +71,7 @@ class LedgerPdfService {
                   child: pw.Container(
                     alignment: pw.Alignment.centerRight,
                     child: pw.Text(
-                      safeDouble(l['credit']).toStringAsFixed(2),
+                      AmountFormatter.format(l['credit']),
                       style: tableDataStyle,
                     ),
                   ),
@@ -113,7 +107,7 @@ class LedgerPdfService {
                 child: pw.Container(
                   alignment: pw.Alignment.centerRight,
                   child: pw.Text(
-                    safeDouble(totalDebit).toStringAsFixed(2),
+                    AmountFormatter.format(totalDebit),
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
                       fontSize: 8,
@@ -126,7 +120,7 @@ class LedgerPdfService {
                 child: pw.Container(
                   alignment: pw.Alignment.centerRight,
                   child: pw.Text(
-                    safeDouble(totalCredit).toStringAsFixed(2),
+                    AmountFormatter.format(totalCredit),
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
                       fontSize: 8,
@@ -184,14 +178,14 @@ class LedgerPdfService {
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Text(
-                    'Opening Debit: ${safeDouble(openingBalanceDebit).toStringAsFixed(2)}',
+                    'Opening Debit: ${ AmountFormatter.format(openingBalanceDebit)}',
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
                       fontSize: 10,
                     ),
                   ),
                   pw.Text(
-                    'Opening Credit: ${safeDouble(openingBalanceCredit).toStringAsFixed(2)}',
+                    'Opening Credit: ${ AmountFormatter.format(openingBalanceCredit)}',
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
                       fontSize: 10,
@@ -271,7 +265,7 @@ class LedgerPdfService {
                 crossAxisAlignment: pw.CrossAxisAlignment.end,
                 children: [
                   pw.Text(
-                    'Total Debit: ${safeDouble(totalDebit + openingBalanceDebit).toStringAsFixed(2)}',
+                    'Total Debit: ${ AmountFormatter.format(totalDebit + openingBalanceDebit)}',
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
                       fontSize: 10,
@@ -279,7 +273,7 @@ class LedgerPdfService {
                   ),
                   pw.SizedBox(height: 4),
                   pw.Text(
-                    'Total Credit: ${safeDouble(totalCredit + openingBalanceCredit).toStringAsFixed(2)}',
+                    'Total Credit: ${ AmountFormatter.format(totalCredit + openingBalanceCredit)}',
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
                       fontSize: 10,
@@ -287,7 +281,7 @@ class LedgerPdfService {
                   ),
                   pw.Divider(),
                   pw.Text(
-                    'Balance: ${safeDouble(balance).toStringAsFixed(2)}',
+                    'Balance: ${ AmountFormatter.format(balance)}',
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
                       fontSize: 10,
