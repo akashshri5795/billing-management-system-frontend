@@ -128,7 +128,7 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
                         headingRowColor: MaterialStateProperty.all(
                           Colors.grey.shade300,
                         ),
-                        columnSpacing: 20,
+                        columnSpacing: 12,
                         columns: const [
                           DataColumn(
                             label: Text(
@@ -221,15 +221,27 @@ class _TabularLedgerScreenState extends State<TabularLedgerScreen> {
                                   ),
                                 ),
                                 DataCell(
-                                  Text(
-                                    l['voucher_no'] ?? '-',
-                                    style: TextStyle(fontSize: 12),
+                                  SizedBox(
+                                    width: 120, // adjust as needed
+                                    child: Text(
+                                      l['voucher_no'] ?? '-',
+                                      style: const TextStyle(fontSize: 12),
+                                      softWrap: true,
+                                      maxLines: null,
+                                      overflow: TextOverflow.visible,
+                                    ),
                                   ),
                                 ),
                                 DataCell(
-                                  Text(
-                                    l['narration'] ?? '-',
-                                    style: TextStyle(fontSize: 12),
+                                  SizedBox(
+                                    width: 300, // narration ke liye zyada width
+                                    child: Text(
+                                      l['narration'] ?? '-',
+                                      style: const TextStyle(fontSize: 12),
+                                      softWrap: true,
+                                      maxLines: null,
+                                      overflow: TextOverflow.visible,
+                                    ),
                                   ),
                                 ),
                                 DataCell(

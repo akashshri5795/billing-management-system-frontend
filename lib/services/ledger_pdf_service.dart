@@ -12,6 +12,8 @@ class LedgerPdfService {
       "56/50, Site-4, Sahibabad Industrial Area, Ghaziabad-201010";
   static const String companyGSTIN =
       "CIN : U74900DL2012PTC234271; GSTIN : 09AAFCR8431A1ZJ";
+  static const String companyPhone =
+      "M.No.: 9811230507";
   static final pw.TextStyle tableDataStyle = pw.TextStyle(fontSize: 8);
   static final pw.TextStyle tableHeaderStyle = pw.TextStyle(
     fontSize: 9,
@@ -50,11 +52,11 @@ class LedgerPdfService {
                 ),
                 pw.Padding(
                   padding: const pw.EdgeInsets.all(2),
-                  child: pw.Text(l['voucher_no'] ?? '', style: tableDataStyle),
+                  child: pw.Text(l['voucher_no'] ?? '', style: tableDataStyle, softWrap: true,),
                 ),
                 pw.Padding(
                   padding: const pw.EdgeInsets.all(2),
-                  child: pw.Text(l['narration'] ?? '', style: tableDataStyle),
+                  child: pw.Text(l['narration'] ?? '', style: tableDataStyle, softWrap: true,),
                 ),
                 pw.Padding(
                   padding: const pw.EdgeInsets.all(2),
@@ -149,6 +151,8 @@ class LedgerPdfService {
                     pw.Text(companyAddress, style: pw.TextStyle(fontSize: 10)),
                     pw.SizedBox(height: 2),
                     pw.Text(companyGSTIN, style: pw.TextStyle(fontSize: 10)),
+                    pw.SizedBox(height: 2),
+                    pw.Text(companyPhone, style: pw.TextStyle(fontSize: 10)),
                     pw.SizedBox(height: 4),
                     pw.Text(
                       "LEDGER",
@@ -199,6 +203,14 @@ class LedgerPdfService {
 
             // Ledger table
             pw.Table(
+              columnWidths: {
+                0: const pw.FixedColumnWidth(55),   // Date
+                1: const pw.FixedColumnWidth(45),   // Type
+                2: const pw.FixedColumnWidth(65),   // Voucher No (WRAP)
+                3: const pw.FlexColumnWidth(3),     // Narration (AUTO WRAP)
+                4: const pw.FixedColumnWidth(55),   // Debit
+                5: const pw.FixedColumnWidth(55),   // Credit
+              },
               children: [
                 pw.TableRow(
                   decoration: const pw.BoxDecoration(
